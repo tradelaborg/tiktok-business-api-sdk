@@ -327,7 +327,13 @@ class ApiClient(object):
                 else:
                     raise TiktokSDKError(message=response.message, error_code=response.code, request_id=response.request_id)
             else:
-                return TikTokSDKResponse(data=response.data, request_id=response.request_id).response()
+                # return TikTokSDKResponse(data=response.data, request_id=response.request_id).response()
+                # response.data is not always returned & {} if returned(success)
+                # Then rely on (response.code, response.message and response.request_id) instead (always returned and give more context)
+                tiktok_sdk_respone = TikTokSDKResponse(code=response.code, message=response.message, request_id=response.request_id)
+                if hasattr(response, 'data'):
+                    tiktok_sdk_respone.data = response.data
+                return tiktok_sdk_respone
         else:
             thread = self.pool.apply_async(self.__call_api, (resource_path,
                                            method, path_params, query_params,
